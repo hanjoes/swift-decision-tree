@@ -8,16 +8,16 @@ import Foundation
 /// categories like: color, sex, etc.)_
 ///
 struct DecisionTreeRule<T> where T: Comparable & Equatable {
-	var feature: String
-	var boundary: T
-	var isNumeric: Bool
-	
-	func conditionSatisfied(x: T) -> Bool {
-		if isNumeric {
-			return x > boundary
-		}
-		else {
-			return x == boundary
-		}
-	}
+    var feature: String
+    var boundary: T
+    var isNumeric: Bool
+    
+    func conditionSatisfied(x: T) -> Bool {
+        if isNumeric {
+            return x > boundary
+        }
+        else {
+            return x == boundary
+        }
+    }
 }

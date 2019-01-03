@@ -10,23 +10,23 @@
 ///
 /// Reference from: [Wikipedia Predictive Analytics CART](https://en.wikipedia.org/wiki/Predictive_analytics#Classification_and_regression_trees_.28CART.29)
 class DecisionTree<T> where T: Comparable & Equatable {
-
-	var root: DecisionTreeNode<T>
-
-	init(root: DecisionTreeNode<T>) {
-		self.root = root
-	}
-
-    static func learn(X: [[String]], y: [String]) -> DecisionTree {
-		let root = split(X: X, y: y)
-		return DecisionTree<T>(root: root)
+    
+    var root: DecisionTreeNode<T>
+    
+    init(root: DecisionTreeNode<T>) {
+        self.root = root
     }
-
-	private static func split(X: [[String]], y: [String]) -> DecisionTreeNode<T> {
-		return DecisionTreeNode<T>(isLeaf: true, dataSet: (X, y))
-	}
-	
-	func predict(X: [Double]) -> Double {
-		return 0.0
-	}
+    
+    static func learn(X: [[String]], y: [String]) -> DecisionTree {
+        let root = split(X: X, y: y)
+        return DecisionTree<T>(root: root)
+    }
+    
+    private static func split(X: [[String]], y: [String]) -> DecisionTreeNode<T> {
+        return DecisionTreeNode<T>(isLeaf: true, dataSet: (X, y))
+    }
+    
+    func predict(X: [Double]) -> Double {
+        return 0.0
+    }
 }
