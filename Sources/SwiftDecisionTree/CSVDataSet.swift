@@ -34,6 +34,24 @@ class CSVDataSet {
         return nil
     }
     
+    
+    /// Divide the dataset into two features and target vectors.
+    ///
+    /// - Parameters:
+    ///   - features: a list of feature names
+    ///   - target: target name
+    /// - Returns: tuple that has feature (X, 2d) and target (y) vectors.
+    func divide(into features: [String], and target: String) -> (X: [[String]], Y: [String]?) {
+        let y = self[dynamicMember: target]
+        var X = [[String]]()
+        for feature in features {
+            if let featureX = self[dynamicMember: feature] {
+                X.append(featureX)
+            }
+        }
+        return (X, y)
+    }
+    
     private func iniializeFromContent(content: String, withHeader: Bool, separator: Character) {
         let lines = content.split(separator: "\n")
         if withHeader {

@@ -60,6 +60,11 @@ weight,,sex
         
         XCTAssertEqual("", ds![1][1])
         XCTAssertEqual("6", ds!.sex![1])
+        
+        let (X, y) = ds!.divide(into: ["weight", "height", "sex"], and: "sex")
+        XCTAssertNotNil(y)
+        XCTAssertEqual([["1", "4"], ["3", "6"]], X)
+        XCTAssertEqual(["3", "6"], y!)
     }
     
     static var allTests = [

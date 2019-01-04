@@ -17,7 +17,13 @@ class DecisionTree<T> where T: Comparable & Equatable {
         self.root = root
     }
     
-    static func learn(X: [[String]], y: [String]) -> DecisionTree {
+    static func learn(dataSet: CSVDataSet, features: [String], target: String) -> DecisionTree? {
+        let (X, _y) = dataSet.divide(into: features, and: target)
+        
+        guard let y = _y else {
+            return nil
+        }
+        
         let root = split(X: X, y: y)
         return DecisionTree<T>(root: root)
     }
