@@ -46,6 +46,22 @@ weight,height,sex
         XCTAssertEqual("6", ds!.sex![1])
     }
     
+    func test_IncompleteHeader() {
+        let ds = CSVDataSet(content: """
+weight,,sex
+1,2,3
+4,,6
+""", withHeader: true, separator: ",")
+        XCTAssertNotNil(ds)
+        XCTAssertNotNil(ds?.weight)
+        XCTAssertEqual(2, ds!.weight!.count)
+        XCTAssertNil(ds!.height)
+        XCTAssertEqual(2, ds!.sex!.count)
+        
+        XCTAssertEqual("", ds![1][1])
+        XCTAssertEqual("6", ds!.sex![1])
+    }
+    
     static var allTests = [
         ("test_EmptyContent", test_EmptyContent),
         ("test_EmptyContent_WithHeader", test_EmptyContent_WithHeader),

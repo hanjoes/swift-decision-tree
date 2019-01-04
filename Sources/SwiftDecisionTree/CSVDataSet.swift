@@ -57,22 +57,11 @@ class CSVDataSet {
         }
     }
     
-    subscript(row: Int) -> [String]? {
-        guard row > 0 && row < dataFrame.count else {
-            return nil
-        }
-        
+    subscript(row: Int) -> [String] {
         return dataFrame[row]
     }
     
-    subscript(row: Int, col: Int) -> String? {
-        guard row > 0 && row < dataFrame.count else {
-            return nil
-        }
-        
-        guard col > 0 && col < dataFrame[row].count else {
-            return nil
-        }
+    subscript(row: Int, col: Int) -> String {
         return dataFrame[row][col]
     }
     
