@@ -7,17 +7,27 @@ import Foundation
 /// Rules can either be _numeric (for continuous values like length, weight, etc.)_ or _non-numeric (discrete values,
 /// categories like: color, sex, etc.)_
 ///
-struct DecisionTreeRule<T> where T: Comparable & Equatable {
+struct DecisionTreeRule {
     var feature: String
-    var boundary: T
+    var boundary: Double
     var isNumeric: Bool
     
-    func conditionSatisfied(x: T) -> Bool {
+    func split(dataSet: CSVDataSet, features: [String], target: String) -> (left: CSVDataSet, right: CSVDataSet) {
+        return (CSVDataSet(content: "", withHeader: false, separator: ",")!, CSVDataSet(content: "", withHeader: false, separator: ",")!)
+    }
+    
+    func conditionSatisfied(x: Double) -> Bool {
         if isNumeric {
             return x > boundary
         }
         else {
             return x == boundary
         }
+    }
+    
+    static func findRule(from dataSet: CSVDataSet,
+                         with features: [String],
+                         and target: String) -> DecisionTreeRule? {
+        return nil
     }
 }

@@ -9,29 +9,27 @@
 ///   (Alternatively, the data are split as much as possible and then the tree is later pruned.)
 ///
 /// Reference from: [Wikipedia Predictive Analytics CART](https://en.wikipedia.org/wiki/Predictive_analytics#Classification_and_regression_trees_.28CART.29)
-class DecisionTree<T> where T: Comparable & Equatable {
+class DecisionTree {
     
-    var root: DecisionTreeNode<T>
+    var dataSet: CSVDataSet
+//    var root: DecisionTreeNode
+    var l: DecisionTree?
+    var r: DecisionTree?
     
-    init(root: DecisionTreeNode<T>) {
-        self.root = root
+    init(dataSet: CSVDataSet) {
+        self.dataSet = dataSet
     }
     
-    static func learn(dataSet: CSVDataSet, features: [String], target: String) -> DecisionTree? {
-        let (X, _y) = dataSet.divide(into: features, and: target)
-        
-        guard let y = _y else {
-            return nil
+    func learn(features: [String], target: String) {
+        if let rule = DecisionTreeRule.findRule(from: dataSet, with: features, and: target) {
+            let (left, right) = rule.split(dataSet: dataSet, features: features, target: target)
+            l = DecisionTree(dataSet: left)
+            l?.learn(features: [String](), target: "")
+            r = DecisionTree(dataSet: right)
+            r?.learn(features: [String](), target: "")
         }
-        
-        let root = split(X: X, y: y)
-        return DecisionTree<T>(root: root)
     }
-    
-    private static func split(X: [[String]], y: [String]) -> DecisionTreeNode<T> {
-        return DecisionTreeNode<T>(isLeaf: true, dataSet: (X, y))
-    }
-    
+
     func predict(X: [Double]) -> Double {
         return 0.0
     }
