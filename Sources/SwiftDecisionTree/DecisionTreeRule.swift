@@ -28,6 +28,10 @@ struct DecisionTreeRule {
     static func findRule(from dataSet: CSVDataSet,
                          with features: [String],
                          and target: String) -> DecisionTreeRule? {
+        for feature in features {
+            let x = dataSet[dynamicMember: feature]
+            print(x)
+        }
         return nil
     }
 }

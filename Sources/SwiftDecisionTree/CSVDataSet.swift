@@ -28,10 +28,8 @@ class CSVDataSet {
     ///   - withHeader: boolean indicating whether this CSV object has header
     ///   - separator: separator used in the CSV to separate values
     init?(csvPath path: String, withHeader: Bool, separator: Character) {
-        if let content = try? String(contentsOfFile: path) {
-            self.iniializeFromContent(content: content, withHeader: withHeader, separator: separator)
-        }
-        return nil
+        guard let content = try? String(contentsOfFile: path) else { return nil }
+        self.iniializeFromContent(content: content, withHeader: withHeader, separator: separator)
     }
     
     
@@ -53,7 +51,7 @@ class CSVDataSet {
     }
     
     private func iniializeFromContent(content: String, withHeader: Bool, separator: Character) {
-        let lines = content.split(separator: "\n")
+        var lines = content.split(separator: "\n")
         if withHeader {
             headers = [String:Int]()
             lines[0].split(separator: separator,
@@ -64,9 +62,10 @@ class CSVDataSet {
                 headers![header.trimmingCharacters(in: CharacterSet.whitespaces)] = index
             }
         }
-        let contentRows = lines.dropFirst()
         
-        for row in contentRows {
+        let firstIndex = withHeader ? 1 : 0
+        
+        for row in lines[firstIndex...] {
             dataFrame.append(row.split(separator: separator,
                                        maxSplits: Int.max,
                                        omittingEmptySubsequences: false).map {

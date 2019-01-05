@@ -12,7 +12,7 @@
 class DecisionTree {
     
     var dataSet: CSVDataSet
-//    var root: DecisionTreeNode
+    var rule: DecisionTreeRule?
     var l: DecisionTree?
     var r: DecisionTree?
     
@@ -22,6 +22,7 @@ class DecisionTree {
     
     func learn(features: [String], target: String) {
         if let rule = DecisionTreeRule.findRule(from: dataSet, with: features, and: target) {
+            self.rule = rule
             let (left, right) = rule.split(dataSet: dataSet, features: features, target: target)
             l = DecisionTree(dataSet: left)
             l?.learn(features: [String](), target: "")
