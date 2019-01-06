@@ -60,23 +60,7 @@ weight,,sex,hobby
         // access row with missing value
         XCTAssertEqual(dsIncomplete[1], ["4", "", "6", "juice"])
     }
-    
-//    func test_IncompleteHeader() {
-//        let ds = CSVDataSet(content: """
-//weight,,sex,hobby
-//1,2,3,4
-//4,,6,
-//""", withHeader: true, separator: ",")
-//        XCTAssertEqual(["1", "4"], ds!.weight!)
-//        XCTAssertEqual(["2", ""], ds!.sex!)
-//        XCTAssertEqual(["2", ""], ds!.col1!)
-//
-//        let (X, y) = ds!.divide(into: ["weight", "height", "sex"], and: "sex")
-//        XCTAssertNotNil(y)
-//        XCTAssertEqual([["1", "4"], ["3", "6"]], X)
-//        XCTAssertEqual(["3", "6"], y!)
-//    }
-    
+
     static var allTests = [
         ("testAccessColumn", testAccessColumn),
         ("testAccessRow", testAccessRow),

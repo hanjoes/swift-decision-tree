@@ -102,19 +102,38 @@ class CSVDataSet {
     
     private func initalizeFromContent(content: String, withHeader: Bool, separator: Character) {
         var lines = content.split(separator: "\n")
-        if withHeader && lines.count > 0 {
-            lines[0].split(separator: separator,
-                           maxSplits: Int.max,
-                           omittingEmptySubsequences: false).enumerated().forEach {
-                            (arg) in
-                            let (index, header) = arg
-                            headers[header.trimmingCharacters(in: CharacterSet.whitespaces)] = index
+        if lines.count > 0 {
+            let columns = lines[0].split(separator: separator,
+                                         maxSplits: Int.max,
+                                         omittingEmptySubsequences: false)
+            if withHeader {
+                columns.enumerated().forEach {
+                    (index, header) in
+                    let trimmedHeader = header.trimmingCharacters(in: CharacterSet.whitespaces)
+                    if trimmedHeader.count > 0 {
+                        headers[trimmedHeader] = index
+                    }
+                    else {
+                        headers["column\(index)"] = index
+                    }
+                }
+            }
+            else {
+                let columnCount = columns.count
+                for index in 0..<columnCount {
+                    headers["column\(index)"] = index
+                }
             }
         }
+        else {
+            headers["column0"] = 0
+
+        }
         
+
         let firstIndex = withHeader ? 1 : 0
         
-        if lines.count > 0 {
+        if lines.count > (withHeader ? 1 : 0) {
             for row in lines[firstIndex...] {
                 dataFrame.append(row.split(separator: separator,
                                            maxSplits: Int.max,
