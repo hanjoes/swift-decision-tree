@@ -3,74 +3,82 @@ import XCTest
 
 final class swift_decision_treeTests: XCTestCase {
     
-    func test_EmptyContent() {
-        let ds = CSVDataSet(content: "", withHeader: true, separator: ",")
-        XCTAssertNil(ds)
-    }
+    // MARK: - Test Input
+    let dsEmpty = CSVDataSet(content: """
+""", withHeader: true, separator: ",")
     
-    func test_EmptyContent_WithHeader() {
-        let ds = CSVDataSet(content: """
+    let dsHeadOnly = CSVDataSet(content: """
 weight,height,sex
 """, withHeader: true, separator: ",")
-        XCTAssertNotNil(ds)
-        XCTAssertNotNil(ds?.weight)
-        XCTAssertEqual(0, ds!.weight!.count)
-    }
     
-    func test_WithHeader_Complete() {
-        let ds = CSVDataSet(content: """
+    let dsComplete = CSVDataSet(content: """
 weight,height,sex
 1,2,3
 4,5,6
 """, withHeader: true, separator: ",")
-        XCTAssertNotNil(ds)
-        XCTAssertNotNil(ds?.weight)
-        XCTAssertEqual(2, ds!.weight!.count)
-        XCTAssertEqual(2, ds!.height!.count)
-        XCTAssertEqual(2, ds!.sex!.count)
+    
+    let dsIncomplete = CSVDataSet(content: """
+weight,,sex,hobby
+1,2,3,
+4,,6,juice
+""", withHeader: true, separator: ",")
+    
+    // MARK: - Access Column
+    
+    func testAccessColumn() {
+        // empty content
+        XCTAssertEqual([], dsHeadOnly.weight)
+        
+        // empty content with header
+        XCTAssertEqual([], dsHeadOnly.weight)
+        
+        // access non-existent header
+        XCTAssertNil(dsComplete.something)
+        
+        // access complete column
+        XCTAssertEqual(dsComplete.sex, ["3", "6"])
+        
+        // access incomplete column
+        XCTAssertEqual(dsIncomplete.hobby, ["", "juice"])
+        
+        // access missing column
+        XCTAssertEqual(dsIncomplete.column1, ["2", ""])
     }
     
-    func test_WithHeader_MissingValue() {
-        let ds = CSVDataSet(content: """
-weight,height,sex
-1,2,3
-4,,6
-""", withHeader: true, separator: ",")
-        XCTAssertNotNil(ds)
-        XCTAssertNotNil(ds?.weight)
-        XCTAssertEqual(2, ds!.weight!.count)
-        XCTAssertEqual(2, ds!.height!.count)
-        XCTAssertEqual(2, ds!.sex!.count)
+    // MARK: - Access Row
+    
+    func testAccessRow() {
+        // empty content
+        XCTAssertNil(dsEmpty[0])
         
-        XCTAssertEqual("", ds!.height![1])
-        XCTAssertEqual("6", ds!.sex![1])
+        // empty content with header
+        XCTAssertNil(dsHeadOnly[0])
+        
+        // access row for complete dataset
+        XCTAssertEqual(dsComplete[0], ["1", "2", "3"])
+        
+        // access row with missing value
+        XCTAssertEqual(dsIncomplete[1], ["4", "", "6", "juice"])
     }
     
-    func test_IncompleteHeader() {
-        let ds = CSVDataSet(content: """
-weight,,sex
-1,2,3
-4,,6
-""", withHeader: true, separator: ",")
-        XCTAssertNotNil(ds)
-        XCTAssertNotNil(ds?.weight)
-        XCTAssertEqual(2, ds!.weight!.count)
-        XCTAssertNil(ds!.height)
-        XCTAssertEqual(2, ds!.sex!.count)
-        
-        XCTAssertEqual("", ds![1][1])
-        XCTAssertEqual("6", ds!.sex![1])
-        
-        let (X, y) = ds!.divide(into: ["weight", "height", "sex"], and: "sex")
-        XCTAssertNotNil(y)
-        XCTAssertEqual([["1", "4"], ["3", "6"]], X)
-        XCTAssertEqual(["3", "6"], y!)
-    }
+//    func test_IncompleteHeader() {
+//        let ds = CSVDataSet(content: """
+//weight,,sex,hobby
+//1,2,3,4
+//4,,6,
+//""", withHeader: true, separator: ",")
+//        XCTAssertEqual(["1", "4"], ds!.weight!)
+//        XCTAssertEqual(["2", ""], ds!.sex!)
+//        XCTAssertEqual(["2", ""], ds!.col1!)
+//
+//        let (X, y) = ds!.divide(into: ["weight", "height", "sex"], and: "sex")
+//        XCTAssertNotNil(y)
+//        XCTAssertEqual([["1", "4"], ["3", "6"]], X)
+//        XCTAssertEqual(["3", "6"], y!)
+//    }
     
     static var allTests = [
-        ("test_EmptyContent", test_EmptyContent),
-        ("test_EmptyContent_WithHeader", test_EmptyContent_WithHeader),
-        ("test_WithHeader_Complete", test_WithHeader_Complete),
-        ("test_WithHeader_MissingValue", test_WithHeader_MissingValue)
+        ("testAccessColumn", testAccessColumn),
+        ("testAccessRow", testAccessRow),
     ]
 }

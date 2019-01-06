@@ -7,7 +7,7 @@ import Foundation
 @dynamicMemberLookup
 class CSVDataSet {
     
-    private var headers: [String:Int]?
+    private var headers = [String:Int]()
     private var dataFrame = [[String]]()
     
     /// Initialize from csv string.
@@ -16,9 +16,8 @@ class CSVDataSet {
     ///   - content: csv content string
     ///   - withHeader: boolean indicating whether this CSV object has header
     ///   - separator: separator used in the CSV to separate values
-    init?(content: String, withHeader: Bool, separator: Character) {
-        guard content.count > 0 else { return nil }
-        self.iniializeFromContent(content: content, withHeader: withHeader, separator: separator)
+    init(content: String, withHeader: Bool, separator: Character) {
+        self.initalizeFromContent(content: content, withHeader: withHeader, separator: separator)
     }
     
     /// Initialize from a path pointing to a CSV file.
@@ -29,7 +28,7 @@ class CSVDataSet {
     ///   - separator: separator used in the CSV to separate values
     init?(csvPath path: String, withHeader: Bool, separator: Character) {
         guard let content = try? String(contentsOfFile: path) else { return nil }
-        self.iniializeFromContent(content: content, withHeader: withHeader, separator: separator)
+        self.initalizeFromContent(content: content, withHeader: withHeader, separator: separator)
     }
     
     
@@ -43,61 +42,86 @@ class CSVDataSet {
         let y = self[dynamicMember: target]
         var X = [[String]]()
         for feature in features {
-            if let featureX = self[dynamicMember: feature] {
-                X.append(featureX)
+            guard let featureX = self[dynamicMember: feature] else {
+                continue
             }
+            X.append(featureX)
         }
         return (X, y)
     }
-    
-    private func iniializeFromContent(content: String, withHeader: Bool, separator: Character) {
-        var lines = content.split(separator: "\n")
-        if withHeader {
-            headers = [String:Int]()
-            lines[0].split(separator: separator,
-                           maxSplits: Int.max,
-                           omittingEmptySubsequences: false).enumerated().forEach {
-                (arg) in
-                let (index, header) = arg
-                headers![header.trimmingCharacters(in: CharacterSet.whitespaces)] = index
-            }
+
+    /// Access a whole role by row index.
+    ///
+    /// When the index is out-of-bound, return _nil_.
+    ///
+    /// - Parameter row: row index
+    subscript(row: Int) -> [String]? {
+        guard row >= 0 && row < dataFrame.count else {
+            return nil
         }
-        
-        let firstIndex = withHeader ? 1 : 0
-        
-        for row in lines[firstIndex...] {
-            dataFrame.append(row.split(separator: separator,
-                                       maxSplits: Int.max,
-                                       omittingEmptySubsequences: false).map {
-                return $0.trimmingCharacters(in: CharacterSet.whitespaces)
-            })
-        }
-    }
-    
-    subscript(row: Int) -> [String] {
         return dataFrame[row]
     }
-    
-    subscript(row: Int, col: Int) -> String {
-        return dataFrame[row][col]
-    }
-    
-    subscript(dynamicMember member: String) -> [String]? {
-        guard let headers = headers else {
+
+    /// Access one sigle element by row index and column index.
+    ///
+    /// When the index is out-of-bound, return _nil_.
+    ///
+    /// - Parameters:
+    ///   - row: row index
+    ///   - col: column index
+    subscript(row: Int, col: Int) -> String? {
+        guard row >= 0 && row < dataFrame.count else {
             return nil
         }
         
-        guard let mappedColumnIndex = headers[member], mappedColumnIndex >= 0 else {
+        guard col >= 0 && col < dataFrame[row].count else {
+            return nil
+        }
+        return dataFrame[row][col]
+    }
+    
+    /// Access one whole column by the name of that column.
+    ///
+    /// When the column doesn't exist, return _nil_.
+    ///
+    /// - Parameter member: column name
+    subscript(dynamicMember member: String) -> [String]? {
+        guard let colIndex = headers[member] else {
             return nil
         }
         
         var result = [String]()
         for row in dataFrame {
-            if mappedColumnIndex < row.count {
-                result.append(row[mappedColumnIndex])
+            if colIndex < row.count {
+                result.append(row[colIndex])
             }
         }
         
         return result
+    }
+    
+    private func initalizeFromContent(content: String, withHeader: Bool, separator: Character) {
+        var lines = content.split(separator: "\n")
+        if withHeader && lines.count > 0 {
+            lines[0].split(separator: separator,
+                           maxSplits: Int.max,
+                           omittingEmptySubsequences: false).enumerated().forEach {
+                            (arg) in
+                            let (index, header) = arg
+                            headers[header.trimmingCharacters(in: CharacterSet.whitespaces)] = index
+            }
+        }
+        
+        let firstIndex = withHeader ? 1 : 0
+        
+        if lines.count > 0 {
+            for row in lines[firstIndex...] {
+                dataFrame.append(row.split(separator: separator,
+                                           maxSplits: Int.max,
+                                           omittingEmptySubsequences: false).map {
+                                            return $0.trimmingCharacters(in: CharacterSet.whitespaces)
+                })
+            }
+        }
     }
 }

@@ -13,7 +13,7 @@ struct DecisionTreeRule {
     var isNumeric: Bool
     
     func split(dataSet: CSVDataSet, features: [String], target: String) -> (left: CSVDataSet, right: CSVDataSet) {
-        return (CSVDataSet(content: "", withHeader: false, separator: ",")!, CSVDataSet(content: "", withHeader: false, separator: ",")!)
+        return (CSVDataSet(content: "", withHeader: false, separator: ","), CSVDataSet(content: "", withHeader: false, separator: ","))
     }
     
     func conditionSatisfied(x: Double) -> Bool {

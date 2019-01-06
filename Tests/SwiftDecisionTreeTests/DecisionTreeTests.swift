@@ -12,7 +12,7 @@ final class DecisionTreeTests: XCTestCase {
             return
         }
         
-        print(ds.0)
+//        print(ds.0)
 
     }
 
