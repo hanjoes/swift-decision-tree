@@ -8,7 +8,9 @@
 /// - Splitting stops when CART detects no further gain can be made, or some pre-set stopping rules are met.
 ///   (Alternatively, the data are split as much as possible and then the tree is later pruned.)
 ///
-/// Reference from: [Wikipedia Predictive Analytics CART](https://en.wikipedia.org/wiki/Predictive_analytics#Classification_and_regression_trees_.28CART.29)
+/// Reference from:
+/// - [Predictive Analytics](https://en.wikipedia.org/wiki/Predictive_analytics#Classification_and_regression_trees_.28CART.29)
+/// - [Decision Tree Learning](https://en.wikipedia.org/wiki/Decision_tree_learning)
 class DecisionTree {
     
     var dataSet: CSVDataSet

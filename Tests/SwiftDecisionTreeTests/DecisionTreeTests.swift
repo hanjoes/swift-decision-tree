@@ -12,8 +12,9 @@ final class DecisionTreeTests: XCTestCase {
             return
         }
         
-//        print(ds.0)
-
+        
+        let tree = DecisionTree(dataSet: ds)
+        tree.learn(features: ["column0", "column1"], target: "column4")
     }
 
     static var allTests = [

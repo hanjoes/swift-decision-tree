@@ -11,6 +11,11 @@ final class swift_decision_treeTests: XCTestCase {
 weight,height,sex
 """, withHeader: true, separator: ",")
     
+    let dsCompleteNoHeader = CSVDataSet(content: """
+1,2,3
+4,5,6
+""", withHeader: false, separator: ",")
+    
     let dsComplete = CSVDataSet(content: """
 weight,height,sex
 1,2,3
@@ -27,10 +32,13 @@ weight,,sex,hobby
     
     func testAccessColumn() {
         // empty content
-        XCTAssertEqual([], dsHeadOnly.weight)
-        
+        XCTAssertEqual([], dsEmpty.column0)
+
         // empty content with header
         XCTAssertEqual([], dsHeadOnly.weight)
+        
+        // no header
+        XCTAssertEqual(["3", "6"], dsCompleteNoHeader.column2)
         
         // access non-existent header
         XCTAssertNil(dsComplete.something)

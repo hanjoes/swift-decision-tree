@@ -7,7 +7,8 @@ import Foundation
 @dynamicMemberLookup
 class CSVDataSet {
     
-    private var headers = [String:Int]()
+    var headers = [String:Int]()
+    
     private var dataFrame = [[String]]()
     
     /// Initialize from csv string.
