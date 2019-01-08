@@ -14,22 +14,33 @@
 class DecisionTree {
     
     var dataSet: CSVDataSet
+    let rowIndices: [Int]
     var rule: DecisionTreeRule?
     var l: DecisionTree?
     var r: DecisionTree?
     
+    init(dataSet: CSVDataSet, rowIndices: [Int]) {
+        self.dataSet = dataSet
+        self.rowIndices = rowIndices
+    }
+    
     init(dataSet: CSVDataSet) {
         self.dataSet = dataSet
+        var _rowIndices = [Int]()
+        for index in 0..<dataSet.rowCount {
+            _rowIndices.append(index)
+        }
+        self.rowIndices = _rowIndices
     }
     
     func learn(features: [String], target: String) {
         if let rule = DecisionTreeRule.findRule(from: dataSet, with: features, and: target) {
             self.rule = rule
-            let (left, right) = rule.split(dataSet: dataSet, features: features, target: target)
-            l = DecisionTree(dataSet: left)
-            l?.learn(features: [String](), target: "")
-            r = DecisionTree(dataSet: right)
-            r?.learn(features: [String](), target: "")
+            let (left, right) = rule.split(dataSet: dataSet)
+            l = DecisionTree(dataSet: left, rowIndices: rowIndices)
+            l?.learn(features: [String](), target: target)
+            r = DecisionTree(dataSet: right, rowIndices: rowIndices)
+            r?.learn(features: [String](), target: target)
         }
     }
 

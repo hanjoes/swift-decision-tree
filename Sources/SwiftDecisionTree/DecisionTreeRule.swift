@@ -19,9 +19,31 @@ struct DecisionTreeRule {
         case object
     }
     
-    func split(dataSet: CSVDataSet, features: [String], target: String) -> (left: CSVDataSet, right: CSVDataSet) {
-        return (CSVDataSet(content: "", withHeader: false, separator: ","),
-                CSVDataSet(content: "", withHeader: false, separator: ","))
+    func split(dataSet: CSVDataSet) -> (left: CSVDataSet, right: CSVDataSet) {
+        let boundaryColumn = dataSet[dynamicMember: feature]!
+        var leftRows = [[String]]()
+        var rightRows = [[String]]()
+        for (index, value) in boundaryColumn.enumerated() {
+            switch ruleType {
+            case .numeric:
+                if Double(value)! < Double(boundary)! {
+                    leftRows.append(dataSet[index]!)
+                }
+                else {
+                    rightRows.append(dataSet[index]!)
+                }
+            case .object:
+                if value != boundary {
+                    leftRows.append(dataSet[index]!)
+                }
+                else {
+                    rightRows.append(dataSet[index]!)
+                }
+            }
+        }
+        
+        let headers = dataSet.headers.keys.map { $0 }
+        return (CSVDataSet(rows: leftRows, headers: headers), CSVDataSet(rows: rightRows, headers: headers))
     }
 
     static func findRule(from dataSet: CSVDataSet,

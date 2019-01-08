@@ -9,6 +9,10 @@ class CSVDataSet {
     
     var headers = [String:Int]()
     
+    var rowCount: Int {
+        return dataFrame.count
+    }
+    
     private var dataFrame = [[String]]()
     
     /// Initialize from csv string.
@@ -33,6 +37,18 @@ class CSVDataSet {
     }
     
     
+    /// Initialize directly from rows and headers.
+    ///
+    /// - Parameters:
+    ///   - rows: list of rows
+    ///   - headers: headers
+    init(rows: [[String]], headers: [String]) {
+        self.dataFrame = rows
+        for (index, header) in headers.enumerated() {
+            self.headers[header] = index
+        }
+    }
+
     /// Divide the dataset into two features and target vectors.
     ///
     /// - Parameters:

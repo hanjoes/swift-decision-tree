@@ -12,7 +12,6 @@ final class DecisionTreeTests: XCTestCase {
             return
         }
         
-        
         let tree = DecisionTree(dataSet: ds)
         tree.learn(features: ["column0", "column1"], target: "column4")
     }
