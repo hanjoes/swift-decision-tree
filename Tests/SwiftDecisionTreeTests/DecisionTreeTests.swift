@@ -13,7 +13,8 @@ final class DecisionTreeTests: XCTestCase {
         }
         
         let tree = DecisionTree(dataSet: ds)
-        tree.learn(features: ["column0", "column1"], target: "column4")
+        tree.learn(features: ["column0", "column1", "column2", "column3"], target: "column4")
+//        print(tree.basicStats)
     }
 
     static var allTests = [

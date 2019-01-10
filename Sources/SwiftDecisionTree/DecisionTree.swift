@@ -18,29 +18,45 @@ class DecisionTree {
     var rule: DecisionTreeRule?
     var l: DecisionTree?
     var r: DecisionTree?
+//    let level: Int
+//    var depth: Int {
+//        // TODO
+//        return 0
+//    }
+    
+//    var basicStats: String {
+//        return String(format: """
+//depth: %10d
+//level: %10d
+//""", depth)
+//    }
     
     init(dataSet: CSVDataSet, rowIndices: [Int]) {
         self.dataSet = dataSet
         self.rowIndices = rowIndices
+//        self.level = level
     }
     
-    init(dataSet: CSVDataSet) {
+    init(dataSet:CSVDataSet) {
         self.dataSet = dataSet
         var _rowIndices = [Int]()
         for index in 0..<dataSet.rowCount {
             _rowIndices.append(index)
         }
         self.rowIndices = _rowIndices
+//        self.level = 0
     }
     
     func learn(features: [String], target: String) {
-        if let rule = DecisionTreeRule.findRule(from: dataSet, with: features, and: target) {
+        if let rule = DecisionTreeRule.findRule(from: dataSet, rows: rowIndices, with: features, and: target) {
             self.rule = rule
             let (left, right) = rule.split(dataSet: dataSet)
-            l = DecisionTree(dataSet: left, rowIndices: rowIndices)
-            l?.learn(features: [String](), target: target)
-            r = DecisionTree(dataSet: right, rowIndices: rowIndices)
-            r?.learn(features: [String](), target: target)
+            print("left: \(left.count) rows, right: \(right.count) rows")
+            l = DecisionTree(dataSet: dataSet, rowIndices: left)
+            l?.learn(features: features, target: target)
+            r = DecisionTree(dataSet: dataSet, rowIndices: right)
+            r?.learn(features: features, target: target)
+            
         }
     }
 

@@ -19,34 +19,33 @@ struct DecisionTreeRule {
         case object
     }
     
-    func split(dataSet: CSVDataSet) -> (left: CSVDataSet, right: CSVDataSet) {
+    func split(dataSet: CSVDataSet) -> (leftRows: [Int], rightRows: [Int]) {
         let boundaryColumn = dataSet[dynamicMember: feature]!
-        var leftRows = [[String]]()
-        var rightRows = [[String]]()
+        var leftRows = [Int]()
+        var rightRows = [Int]()
         for (index, value) in boundaryColumn.enumerated() {
             switch ruleType {
             case .numeric:
                 if Double(value)! < Double(boundary)! {
-                    leftRows.append(dataSet[index]!)
+                    leftRows.append(index)
                 }
                 else {
-                    rightRows.append(dataSet[index]!)
+                    rightRows.append(index)
                 }
             case .object:
                 if value != boundary {
-                    leftRows.append(dataSet[index]!)
+                    leftRows.append(index)
                 }
                 else {
-                    rightRows.append(dataSet[index]!)
+                    rightRows.append(index)
                 }
             }
         }
-        
-        let headers = dataSet.headers.keys.map { $0 }
-        return (CSVDataSet(rows: leftRows, headers: headers), CSVDataSet(rows: rightRows, headers: headers))
+        return (leftRows, rightRows)
     }
 
     static func findRule(from dataSet: CSVDataSet,
+                         rows: [Int],
                          with features: [String],
                          and target: String) -> DecisionTreeRule? {
         let targetColumn = dataSet[dynamicMember: target]!
@@ -54,16 +53,17 @@ struct DecisionTreeRule {
         var maxInformationGain = 0.0
         var result: (String, String, RuleType)?
         for feature in features {
-            print("analyzing feature: \(feature), maxInformationGain: \(maxInformationGain)")
+//            print("analyzing feature: \(feature), maxInformationGain: \(maxInformationGain)")
             let currentColumn = dataSet[dynamicMember: feature]!
             if let (lgini, rgini, boundary, type) = findBestBoundary(target: targetColumn,
                                                                      column: currentColumn,
+                                                                     rows: rows,
                                                                      currentGini: currentGini) {
 
                 // simple information gain by subtracting the avg of subtrees' gini from the parent's gini
                 let avgGini = (lgini + rgini) / 2
                 let informationGain = currentGini - avgGini
-                print("lgini: \(lgini), rgini: \(rgini), informationGain: \(informationGain)")
+//                print("lgini: \(lgini), rgini: \(rgini), informationGain: \(informationGain)")
                 if informationGain > maxInformationGain {
                     maxInformationGain = informationGain
                     result = (feature, boundary, type)
@@ -78,13 +78,17 @@ struct DecisionTreeRule {
         return DecisionTreeRule(feature: feature, boundary: boundary, ruleType: type)
     }
     
-    private static func findBestBoundary(target: [String], column: [String],
+    private static func findBestBoundary(target: [String], column: [String], rows: [Int],
                                          currentGini: Double) -> (Double, Double, String, RuleType)? {
         let type = analyze(column: column)
         var maxInformationGain = 0.0
         var result: (Double, Double, String, RuleType)?
-        for currentBoundary in column {
-            let (l, r) = divide(target: target, boundary: currentBoundary, feature: column, type: type)
+        for rowIndex in rows {
+            let currentBoundary = column[rowIndex]
+            let (l, r) = divide(target: target, boundary: currentBoundary, feature: column, rows: rows, type: type)
+            if l.count == 0 || r.count == 0 {
+                continue
+            }
             let lgini = gini(of: l)
             let rgini = gini(of: r)
             let informationGain = currentGini - ((lgini + rgini) / 2)
@@ -98,29 +102,28 @@ struct DecisionTreeRule {
     }
     
     private static func divide(target: [String], boundary: String,
-                               feature: [String], type: RuleType) -> ([String], [String]) {
+                               feature column: [String], rows: [Int],
+                               type: RuleType) -> ([String], [String]) {
         var left = [String]()
         var right = [String]()
-        switch type {
-        case .numeric:
-            for (index, value) in feature.enumerated() {
-                if Double(value)! < Double(boundary)! {
-                    left.append(target[index])
-                }
-                else {
-                    right.append(target[index])
-                }
+        for row in rows {
+            let value = column[row]
+            switch type {
+                case .numeric:
+                    if Double(value)! < Double(boundary)! {
+                        left.append(target[row])
+                    }
+                    else {
+                        right.append(target[row])
+                    }
+                case .object:
+                    if value != boundary {
+                        left.append(target[row])
+                    }
+                    else {
+                        right.append(target[row])
+                    }
             }
-        case .object:
-            for (index, value) in feature.enumerated() {
-                if value != boundary {
-                    left.append(target[index])
-                }
-                else {
-                    right.append(target[index])
-                }
-            }
-            
         }
         return (left, right)
     }
