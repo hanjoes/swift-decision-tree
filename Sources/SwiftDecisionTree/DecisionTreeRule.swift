@@ -19,52 +19,25 @@ struct DecisionTreeRule {
         case object
     }
     
-    func split(dataSet: CSVDataSet, rows: [Int]) -> (leftRows: [Int], rightRows: [Int]) {
-        let boundaryColumn = dataSet[dynamicMember: feature]!
-        var leftRows = [Int]()
-        var rightRows = [Int]()
-        for rowIndex in rows {
-            let value = boundaryColumn[rowIndex]
-            switch ruleType {
-            case .numeric:
-                if Double(value)! < Double(boundary)! {
-                    leftRows.append(rowIndex)
-                }
-                else {
-                    rightRows.append(rowIndex)
-                }
-            case .object:
-                if value != boundary {
-                    leftRows.append(rowIndex)
-                }
-                else {
-                    rightRows.append(rowIndex)
-                }
-            }
-        }
-        return (leftRows, rightRows)
+    func split(dataset: CSVDataSet, rowIndices: [Int]) -> (leftRows: [Int], rightRows: [Int]) {
+        return DecisionTreeRule.divide(dataset: dataset, using: self.boundary, for: self.feature, rowIndices: rowIndices, type: self.ruleType)
     }
 
-    static func findRule(from dataSet: CSVDataSet,
-                         rows: [Int],
-                         with features: [String],
-                         and target: String) -> DecisionTreeRule? {
-        let targetColumn = dataSet[dynamicMember: target]!
-        let currentGini = gini(of: targetColumn)
+    static func findRule(dataset: CSVDataSet,
+                         rowIndices: [Int],
+                         features: [String],
+                         target: String) -> DecisionTreeRule? {
+        let currentGini = gini(of: dataset, target: target, rowIndices: rowIndices)
         var maxInformationGain = 0.0
         var result: (String, String, RuleType)?
         for feature in features {
-//            print("analyzing feature: \(feature), maxInformationGain: \(maxInformationGain)")
-            let currentColumn = dataSet[dynamicMember: feature]!
-            if let (lgini, rgini, boundary, type) = findBestBoundary(target: targetColumn,
-                                                                     column: currentColumn,
-                                                                     rows: rows,
-                                                                     currentGini: currentGini) {
-
+            if let (lgini, rgini, boundary, type) = findBoundary(for: feature,
+                                                                 target: target,
+                                                                 rowIndices: rowIndices,
+                                                                 in: dataset) {
                 // simple information gain by subtracting the avg of subtrees' gini from the parent's gini
                 let avgGini = (lgini + rgini) / 2
                 let informationGain = currentGini - avgGini
-//                print("lgini: \(lgini), rgini: \(rgini), informationGain: \(informationGain)")
                 if informationGain > maxInformationGain {
                     maxInformationGain = informationGain
                     result = (feature, boundary, type)
@@ -75,25 +48,26 @@ struct DecisionTreeRule {
         guard let (feature, boundary, type) = result else {
             return nil
         }
-        print("found rule with feature: \(feature), boundary: \(boundary), type: \(type)")
         return DecisionTreeRule(feature: feature, boundary: boundary, ruleType: type)
     }
     
-    private static func findBestBoundary(target: [String], column: [String], rows: [Int],
-                                         currentGini: Double) -> (Double, Double, String, RuleType)? {
+    private static func findBoundary(for feature: String,
+                                     target: String,
+                                     rowIndices: [Int],
+                                     in dataset: CSVDataSet) -> (Double, Double, String, RuleType)? {
+        let column = dataset[dynamicMember: feature]!
         let type = analyze(column: column)
-        var maxInformationGain = 0.0
+        var maxInformationGain = Double(Int.min)
         var result: (Double, Double, String, RuleType)?
-        for rowIndex in rows {
+        for rowIndex in rowIndices {
             let currentBoundary = column[rowIndex]
-            let (l, r) = divide(target: target, boundary: currentBoundary, feature: column, rows: rows, type: type)
+            let (l, r) = divide(dataset: dataset, using: currentBoundary, for: feature, rowIndices: rowIndices, type: type)
             if l.count == 0 || r.count == 0 {
                 continue
             }
-            let lgini = gini(of: l)
-            let rgini = gini(of: r)
-            let informationGain = currentGini - ((lgini + rgini) / 2)
-//            print("currentBoundary \(currentBoundary), divided, l size: \(l.count), r size: \(r.count), lgini: \(lgini), rgini: \(rgini), informationGain: \(informationGain)")
+            let lgini = gini(of: dataset, target: target, rowIndices: l)
+            let rgini = gini(of: dataset, target: target, rowIndices: r)
+            let informationGain =  -((lgini + rgini) / 2)
             if informationGain > maxInformationGain {
                 maxInformationGain = informationGain
                 result = (lgini, rgini, currentBoundary, type)
@@ -102,40 +76,44 @@ struct DecisionTreeRule {
         return result
     }
     
-    private static func divide(target: [String], boundary: String,
-                               feature column: [String], rows: [Int],
-                               type: RuleType) -> ([String], [String]) {
-        var left = [String]()
-        var right = [String]()
-        for row in rows {
-            let value = column[row]
+    private static func divide(dataset: CSVDataSet, using boundary: String,
+                               for feature: String, rowIndices: [Int],
+                               type: RuleType) -> ([Int], [Int]) {
+        var left = [Int]()
+        var right = [Int]()
+        let column = dataset[dynamicMember: feature]!
+        for rowIndex in rowIndices {
+            let value = column[rowIndex]
             switch type {
-                case .numeric:
-                    if Double(value)! < Double(boundary)! {
-                        left.append(target[row])
-                    }
-                    else {
-                        right.append(target[row])
-                    }
-                case .object:
-                    if value != boundary {
-                        left.append(target[row])
-                    }
-                    else {
-                        right.append(target[row])
-                    }
+            case .numeric:
+                if Double(value)! < Double(boundary)! {
+                    left.append(rowIndex)
+                }
+                else {
+                    right.append(rowIndex)
+                }
+            case .object:
+                if value != boundary {
+                    left.append(rowIndex)
+                }
+                else {
+                    right.append(rowIndex)
+                }
             }
         }
         return (left, right)
     }
-    
+
     private static func analyze(column: [String]) -> RuleType {
         return column.allSatisfy { Double($0) != nil } ? .numeric : .object
     }
-
-    private static func gini(of rows: [String]) -> Double {
+    
+    private static func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
+        let targetColumn = dataset[dynamicMember: target]!
+        
         var histogram = [String:Double]()
-        for value in rows {
+        for rowIndex in rowIndices {
+            let value = targetColumn[rowIndex]
             if let _ = histogram[value] {
                 histogram[value]! += 1.0
             }
@@ -146,10 +124,10 @@ struct DecisionTreeRule {
         
         var uncertainty = 0.0
         for v in histogram.values {
-            let p = (v / Double(rows.count))
+            let p = (v / Double(rowIndices.count))
             uncertainty += p * p
         }
-
+        
         return 1.0 - uncertainty
     }
 }

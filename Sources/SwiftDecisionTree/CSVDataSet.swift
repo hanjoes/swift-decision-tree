@@ -35,37 +35,6 @@ class CSVDataSet {
         guard let content = try? String(contentsOfFile: path) else { return nil }
         self.initalizeFromContent(content: content, withHeader: withHeader, separator: separator)
     }
-    
-    
-    /// Initialize directly from rows and headers.
-    ///
-    /// - Parameters:
-    ///   - rows: list of rows
-    ///   - headers: headers
-    init(rows: [[String]], headers: [String]) {
-        self.dataFrame = rows
-        for (index, header) in headers.enumerated() {
-            self.headers[header] = index
-        }
-    }
-
-    /// Divide the dataset into two features and target vectors.
-    ///
-    /// - Parameters:
-    ///   - features: a list of feature names
-    ///   - target: target name
-    /// - Returns: tuple that has feature (X, 2d) and target (y) vectors.
-    func divide(into features: [String], and target: String) -> (X: [[String]], Y: [String]?) {
-        let y = self[dynamicMember: target]
-        var X = [[String]]()
-        for feature in features {
-            guard let featureX = self[dynamicMember: feature] else {
-                continue
-            }
-            X.append(featureX)
-        }
-        return (X, y)
-    }
 
     /// Access a whole role by row index.
     ///
@@ -115,6 +84,10 @@ class CSVDataSet {
         }
         
         return result
+    }
+    
+    func getInfo() {
+        
     }
     
     private func initalizeFromContent(content: String, withHeader: Bool, separator: Character) {

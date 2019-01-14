@@ -12,36 +12,59 @@
 /// - [Predictive Analytics](https://en.wikipedia.org/wiki/Predictive_analytics#Classification_and_regression_trees_.28CART.29)
 /// - [Decision Tree Learning](https://en.wikipedia.org/wiki/Decision_tree_learning)
 class DecisionTree {
-    
-    var dataSet: CSVDataSet
-    let rowIndices: [Int]
-    var rule: DecisionTreeRule?
-    var l: DecisionTree?
-    var r: DecisionTree?
 
-    init(dataSet: CSVDataSet, rowIndices: [Int]) {
-        self.dataSet = dataSet
-        self.rowIndices = rowIndices
+    /// Boolean indicating if this tree is a leaf.
+    var isLeaf: Bool {
+        return l == nil && r == nil
     }
     
+    private let rowIndices: [Int]
+    private var rule: DecisionTreeRule?
+    private var l: DecisionTree?
+    private var r: DecisionTree?
+    private var dataset: CSVDataSet
+
+    
+    /// Initialize a __DecisionTree__ from a __CSVDataSet__.
+    ///
+    /// When first constracted from a dataset, the tree is just a container which
+    /// stores data. To make it "smart" enough to make predictions, it needs to
+    /// "learn" from the features and the target.
+    ///
+    /// - note: check the __learn__ method
+    ///
+    /// - Parameter dataSet: the dataset used to build the tree
     init(dataSet:CSVDataSet) {
-        self.dataSet = dataSet
+        self.dataset = dataSet
         var _rowIndices = [Int]()
         for index in 0..<dataSet.rowCount {
             _rowIndices.append(index)
         }
         self.rowIndices = _rowIndices
     }
+
+    private init(dataset: CSVDataSet, rowIndices: [Int]) {
+        self.dataset = dataset
+        self.rowIndices = rowIndices
+    }
     
+    
+    /// A tree need to "learn" from the specified features before it can classify/predict values.
+    ///
+    /// - Parameters:
+    ///   - features: feature columns as input
+    ///   - target: target value as output
     func learn(features: [String], target: String) {
-        if let rule = DecisionTreeRule.findRule(from: dataSet, rows: rowIndices, with: features, and: target) {
+        if let rule = DecisionTreeRule.findRule(dataset: self.dataset,
+                                                rowIndices: self.rowIndices,
+                                                features: features,
+                                                target: target) {
             self.rule = rule
-            let (left, right) = rule.split(dataSet: dataSet, rows: rowIndices)
-            l = DecisionTree(dataSet: dataSet, rowIndices: left)
+            let (left, right) = rule.split(dataset: dataset, rowIndices: rowIndices)
+            l = DecisionTree(dataset: dataset, rowIndices: left)
             l?.learn(features: features, target: target)
-            r = DecisionTree(dataSet: dataSet, rowIndices: right)
+            r = DecisionTree(dataset: dataset, rowIndices: right)
             r?.learn(features: features, target: target)
-            
         }
     }
 
