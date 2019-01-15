@@ -6,13 +6,38 @@ import Foundation
 /// This implementation stores everything in the memory.
 @dynamicMemberLookup
 class CSVDataSet {
-    
+
+    /// A dictionary from header name to index.
     var headers = [String:Int]()
-    
+
+    /// Number of rows in the dataset.
     var rowCount: Int {
         return dataFrame.count
     }
-    
+
+    /// Split the dataset into training & test datasets.
+    ///
+    /// - Parameter testPercentage: percentage of the data that should appear in test set
+    /// - Returns: tuple (training, test) for the split result
+    func trainingTestSplit(testPercentage: Double) -> (training: [Int], test: [Int]) {
+        let testRowCount = Int(Double(rowCount) * testPercentage)
+        var trainingIndices = [Int]()
+        var testIndices = [Int]()
+        for _ in 0..<testRowCount {
+            let randomTestIndex = Int.random(in: 0..<rowCount)
+            testIndices.append(randomTestIndex)
+        }
+        
+        let testSet = Set(testIndices)
+        for index in 0..<rowCount {
+            if testSet.contains(index) {
+                continue
+            }
+            trainingIndices.append(index)
+        }
+        return (trainingIndices, testIndices)
+    }
+
     private var dataFrame = [[String]]()
     
     /// Initialize from csv string.
@@ -85,11 +110,7 @@ class CSVDataSet {
         
         return result
     }
-    
-    func getInfo() {
-        
-    }
-    
+
     private func initalizeFromContent(content: String, withHeader: Bool, separator: Character) {
         var lines = content.split(separator: "\n")
         if lines.count > 0 {
@@ -117,7 +138,6 @@ class CSVDataSet {
         }
         else {
             headers["column0"] = 0
-
         }
         
 

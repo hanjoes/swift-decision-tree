@@ -18,11 +18,15 @@ struct DecisionTreeRule {
         case numeric
         case object
     }
-    
-    func split(dataset: CSVDataSet, rowIndices: [Int]) -> (leftRows: [Int], rightRows: [Int]) {
-        return DecisionTreeRule.divide(dataset: dataset, using: self.boundary, for: self.feature, rowIndices: rowIndices, type: self.ruleType)
-    }
 
+    /// Finds a __DecisionTreeRule__ for a given dataset and feature/target sets.
+    ///
+    /// - Parameters:
+    ///   - dataset: dataset
+    ///   - rowIndices: indices into the dataset as input
+    ///   - features: list of feature (columns) in the given dataset as input
+    ///   - target: the target (column) used as the output
+    /// - Returns: a __DecisionTreeRule__ object based on the input dataset.
     static func findRule(dataset: CSVDataSet,
                          rowIndices: [Int],
                          features: [String],
@@ -51,6 +55,20 @@ struct DecisionTreeRule {
         return DecisionTreeRule(feature: feature, boundary: boundary, ruleType: type)
     }
     
+    /// Split a given dataset into two sets, indicated by the row indices.
+    ///
+    /// - Parameters:
+    ///   - dataset: the dataset to be split
+    ///   - rowIndices: the row indices to be considered in the given dataset
+    /// - Returns: a tuple containing two row indices lists, should add up to the input row indices list
+    func split(dataset: CSVDataSet, rowIndices: [Int]) -> (leftRows: [Int], rightRows: [Int]) {
+        return DecisionTreeRule.divide(dataset: dataset,
+                                       boundary: self.boundary,
+                                       feature: self.feature,
+                                       rowIndices: rowIndices,
+                                       type: self.ruleType)
+    }
+
     private static func findBoundary(for feature: String,
                                      target: String,
                                      rowIndices: [Int],
@@ -61,7 +79,11 @@ struct DecisionTreeRule {
         var result: (Double, Double, String, RuleType)?
         for rowIndex in rowIndices {
             let currentBoundary = column[rowIndex]
-            let (l, r) = divide(dataset: dataset, using: currentBoundary, for: feature, rowIndices: rowIndices, type: type)
+            let (l, r) = divide(dataset: dataset,
+                                boundary: currentBoundary,
+                                feature: feature,
+                                rowIndices: rowIndices,
+                                type: type)
             if l.count == 0 || r.count == 0 {
                 continue
             }
@@ -76,8 +98,10 @@ struct DecisionTreeRule {
         return result
     }
     
-    private static func divide(dataset: CSVDataSet, using boundary: String,
-                               for feature: String, rowIndices: [Int],
+    private static func divide(dataset: CSVDataSet,
+                               boundary: String,
+                               feature: String,
+                               rowIndices: [Int],
                                type: RuleType) -> ([Int], [Int]) {
         var left = [Int]()
         var right = [Int]()
