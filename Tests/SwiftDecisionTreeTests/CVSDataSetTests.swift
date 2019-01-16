@@ -68,9 +68,29 @@ weight,,sex,hobby
         // access row with missing value
         XCTAssertEqual(dsIncomplete[1], ["4", "", "6", "juice"])
     }
+    
+    // MARK: - Training Test Split
+    
+    func testTrainingTestSplit() {
+        // split empty dataset
+        let (dsEmptyTrain, dsEmptyTest) = dsEmpty.trainingTestSplit(testPercentage: 0.2)
+        XCTAssertEqual(0, dsEmptyTrain.count)
+        XCTAssertEqual(0, dsEmptyTest.count)
+        
+        // split dataset doesn't have enough rows for test set
+        var (dsCompleteTrain, dsCompleteTest) = dsComplete.trainingTestSplit(testPercentage: 0.2)
+        XCTAssertEqual(2, dsCompleteTrain.count)
+        XCTAssertEqual(0, dsCompleteTest.count)
+        
+        // split dataset that has enough rows for test set
+        (dsCompleteTrain, dsCompleteTest) = dsComplete.trainingTestSplit(testPercentage: 0.5)
+        XCTAssertEqual(1, dsCompleteTrain.count)
+        XCTAssertEqual(1, dsCompleteTest.count)
+    }
 
     static var allTests = [
         ("testAccessColumn", testAccessColumn),
         ("testAccessRow", testAccessRow),
+        ("testTrainingTestSplit", testTrainingTestSplit)
     ]
 }
