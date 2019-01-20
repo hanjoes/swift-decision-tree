@@ -19,10 +19,13 @@ class DecisionTree {
     }
     
     private let rowIndices: [Int]
+    private let dataset: CSVDataSet
+    private let features: [String]
+    private let target: String
+    
     private var rule: DecisionTreeRule?
     private var l: DecisionTree?
     private var r: DecisionTree?
-    private var dataset: CSVDataSet
 
     
     /// Initialize a __DecisionTree__ from a __CSVDataSet__.
@@ -33,42 +36,79 @@ class DecisionTree {
     ///
     /// - note: check the __learn__ method
     ///
-    /// - Parameter dataSet: the dataset used to build the tree
-    init(dataSet:CSVDataSet) {
-        self.dataset = dataSet
+    /// - Parameters:
+    ///   - dataset: the dataset
+    ///   - features: list of feature columns as input
+    ///   - target: the target column as output
+    init(dataset:CSVDataSet, features: [String], target: String) {
+        self.dataset = dataset
         var _rowIndices = [Int]()
-        for index in 0..<dataSet.rowCount {
+        for index in 0..<dataset.rowCount {
             _rowIndices.append(index)
         }
         self.rowIndices = _rowIndices
+        self.features = features
+        self.target = target
     }
 
-    private init(dataset: CSVDataSet, rowIndices: [Int]) {
+    
+    /// Initializer that takes a reference to the dataset and a list of indices of rows in that dataset.
+    ///
+    /// - Parameters:
+    ///   - dataset: the dataset
+    ///   - rowIndices: indices into the dataset that are valid rows
+    ///   - features: list of feature columns as input
+    ///   - target: the target column as output
+    init(dataset: CSVDataSet, rowIndices: [Int], features: [String], target: String) {
         self.dataset = dataset
         self.rowIndices = rowIndices
+        self.features = features
+        self.target = target
     }
     
     
-    /// A tree need to "learn" from the specified features before it can classify/predict values.
-    ///
-    /// - Parameters:
-    ///   - features: feature columns as input
-    ///   - target: target value as output
-    func learn(features: [String], target: String) {
+    /// A tree need to "learn" before it can make predictions.
+    func learn() {
         if let rule = DecisionTreeRule.findRule(dataset: self.dataset,
                                                 rowIndices: self.rowIndices,
                                                 features: features,
                                                 target: target) {
             self.rule = rule
-            let (left, right) = rule.split(dataset: dataset, rowIndices: rowIndices)
-            l = DecisionTree(dataset: dataset, rowIndices: left)
-            l?.learn(features: features, target: target)
-            r = DecisionTree(dataset: dataset, rowIndices: right)
-            r?.learn(features: features, target: target)
+            let (left, right) = rule.split(dataset: dataset, rowIndices: self.rowIndices)
+            l = DecisionTree(dataset: self.dataset, rowIndices: left, features: features, target: target)
+            l?.learn()
+            r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features, target: target)
+            r?.learn()
         }
     }
 
-    func predict(X: [Double]) -> Double {
-        return 0.0
+    func predict(rowIndex: Int) -> String {
+        var currentTree = self
+        while currentTree.rule != nil {
+            if currentTree.rule!.goRight(dataset: self.dataset, rowIndex: rowIndex) {
+                currentTree = currentTree.r!
+            }
+            else {
+                currentTree = currentTree.l!
+            }
+        }
+        return "found"
+    }
+    
+    func predict(rowIndices: [Int]) -> [String] {
+        return rowIndices.map { predict(rowIndex: $0) }
+    }
+    
+    func evaluate(testRows: [Int]) {
+        let predictions = predict(rowIndices: testRows)
+        let targets = dataset[dynamicMember: target]!
+        var totalDiff = 0.0
+        for (index, prediction) in predictions.enumerated() {
+            let expectation = targets[testRows[index]]
+            if expectation != prediction {
+                totalDiff += 1.0
+            }
+        }
+        print("total diff: \(totalDiff), avgDiff: \(totalDiff/rowIndices.count)")
     }
 }

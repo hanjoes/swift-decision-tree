@@ -68,6 +68,31 @@ struct DecisionTreeRule {
                                        rowIndices: rowIndices,
                                        type: self.ruleType)
     }
+    
+    func goRight(dataset: CSVDataSet, rowIndex: Int) -> Bool {
+        let column = dataset[dynamicMember: feature]!
+        let value = column[rowIndex]
+        return DecisionTreeRule.goesRight(value: value, ruleType: self.ruleType, boundary: self.boundary)
+    }
+    
+    private static func goesRight(value: String, ruleType: RuleType, boundary: String) -> Bool {
+        switch ruleType {
+        case .numeric:
+            if Double(value)! < Double(boundary)! {
+                return false
+            }
+            else {
+                return true
+            }
+        case .object:
+            if value != boundary {
+                return false
+            }
+            else {
+                return true
+            }
+        }
+    }
 
     private static func findBoundary(for feature: String,
                                      target: String,
@@ -108,21 +133,11 @@ struct DecisionTreeRule {
         let column = dataset[dynamicMember: feature]!
         for rowIndex in rowIndices {
             let value = column[rowIndex]
-            switch type {
-            case .numeric:
-                if Double(value)! < Double(boundary)! {
-                    left.append(rowIndex)
-                }
-                else {
-                    right.append(rowIndex)
-                }
-            case .object:
-                if value != boundary {
-                    left.append(rowIndex)
-                }
-                else {
-                    right.append(rowIndex)
-                }
+            if DecisionTreeRule.goesRight(value: value, ruleType: type, boundary: boundary) {
+                right.append(rowIndex)
+            }
+            else {
+                left.append(rowIndex)
             }
         }
         return (left, right)

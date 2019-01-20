@@ -12,8 +12,11 @@ final class DecisionTreeTests: XCTestCase {
             return
         }
         
-        let tree = DecisionTree(dataSet: ds)
-        tree.learn(features: ["column0", "column1", "column2", "column3"], target: "column4")
+        let (train, test) = ds.trainingTestSplit(testPercentage: 0.2)
+        let tree = DecisionTree(dataset: ds, rowIndices: train,
+                                features: ["column0", "column1", "column2", "column3"],
+                                target: "column4")
+        tree.learn()
 //        print(tree.basicStats)
     }
 
