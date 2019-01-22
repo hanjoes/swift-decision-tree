@@ -18,6 +18,33 @@ class DecisionTree {
         return l == nil && r == nil
     }
     
+    
+    /// Majority value of the targets stored in this node.
+    ///
+    /// When this tree node is a leaf, this indicates the prediction result.
+    var majority: String? {
+        let targetColumn = dataset[dynamicMember: target]!
+        var histogram = [String:Int]()
+        var majority: String?
+        var majorityCount = Int.min
+        for rowIndex in rowIndices {
+            let targetValue = targetColumn[rowIndex]
+            if histogram[targetValue] != nil {
+                histogram[targetValue]! += 1
+            }
+            else {
+                histogram[targetValue] = 1
+            }
+            
+            let currentCount = histogram[targetValue]!
+            if currentCount > majorityCount {
+                majority = targetValue
+                majorityCount = currentCount
+            }
+        }
+        return majority
+    }
+    
     private let rowIndices: [Int]
     private let dataset: CSVDataSet
     private let features: [String]
@@ -68,21 +95,26 @@ class DecisionTree {
     
     
     /// A tree need to "learn" before it can make predictions.
-    func learn() {
+    @discardableResult
+    func learn() -> DecisionTree {
         if let rule = DecisionTreeRule.findRule(dataset: self.dataset,
                                                 rowIndices: self.rowIndices,
                                                 features: features,
                                                 target: target) {
             self.rule = rule
             let (left, right) = rule.split(dataset: dataset, rowIndices: self.rowIndices)
-            l = DecisionTree(dataset: self.dataset, rowIndices: left, features: features, target: target)
-            l?.learn()
-            r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features, target: target)
-            r?.learn()
+            l = DecisionTree(dataset: self.dataset, rowIndices: left, features: features, target: target).learn()
+            r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features, target: target).learn()
         }
+        return self
     }
 
-    func predict(rowIndex: Int) -> String {
+    // TODO: better naming
+    /// Predict the output given an input row.
+    ///
+    /// - Parameter rowIndex: index of the input row
+    /// - Returns: the prediction
+    func predict(rowIndex: Int) -> String? {
         var currentTree = self
         while currentTree.rule != nil {
             if currentTree.rule!.goRight(dataset: self.dataset, rowIndex: rowIndex) {
@@ -92,13 +124,22 @@ class DecisionTree {
                 currentTree = currentTree.l!
             }
         }
-        return "found"
+        
+        return currentTree.majority
     }
     
-    func predict(rowIndices: [Int]) -> [String] {
+    // TODO: better naming
+    /// Predict the output given a list of input rows.
+    ///
+    /// - Parameter rowIndices: list of input rows
+    /// - Returns: the prediction for each of the input rows
+    func predict(rowIndices: [Int]) -> [String?] {
         return rowIndices.map { predict(rowIndex: $0) }
     }
     
+    /// Evaluate the model based on the test input.
+    ///
+    /// - Parameter testRows: list of test rows
     func evaluate(testRows: [Int]) {
         let predictions = predict(rowIndices: testRows)
         let targets = dataset[dynamicMember: target]!
@@ -109,6 +150,6 @@ class DecisionTree {
                 totalDiff += 1.0
             }
         }
-        print("total diff: \(totalDiff), avgDiff: \(totalDiff/rowIndices.count)")
+        print("test size: \(testRows.count), total diff: \(totalDiff), avgDiff: \(totalDiff/Double(rowIndices.count))")
     }
 }
