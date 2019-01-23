@@ -8,12 +8,11 @@ import Foundation
 /// categories like: color, sex, etc.)_
 ///
 struct DecisionTreeRule {
+    
     var feature: String
     var boundary: String
     var ruleType: RuleType
-    
-    private static let THRESHOLD = 0.1
-    
+
     enum RuleType {
         case numeric
         case object
@@ -74,8 +73,15 @@ struct DecisionTreeRule {
         let value = column[rowIndex]
         return DecisionTreeRule.goesRight(value: value, ruleType: self.ruleType, boundary: self.boundary)
     }
+}
+
+// MARK: - Utility
+
+private extension DecisionTreeRule {
     
-    private static func goesRight(value: String, ruleType: RuleType, boundary: String) -> Bool {
+    static let THRESHOLD = 0.1
+    
+    static func goesRight(value: String, ruleType: RuleType, boundary: String) -> Bool {
         switch ruleType {
         case .numeric:
             if Double(value)! < Double(boundary)! {
@@ -93,8 +99,8 @@ struct DecisionTreeRule {
             }
         }
     }
-
-    private static func findBoundary(for feature: String,
+    
+    static func findBoundary(for feature: String,
                                      target: String,
                                      rowIndices: [Int],
                                      in dataset: CSVDataSet) -> (Double, Double, String, RuleType)? {
@@ -123,7 +129,7 @@ struct DecisionTreeRule {
         return result
     }
     
-    private static func divide(dataset: CSVDataSet,
+    static func divide(dataset: CSVDataSet,
                                boundary: String,
                                feature: String,
                                rowIndices: [Int],
@@ -142,12 +148,12 @@ struct DecisionTreeRule {
         }
         return (left, right)
     }
-
-    private static func analyze(column: [String]) -> RuleType {
+    
+    static func analyze(column: [String]) -> RuleType {
         return column.allSatisfy { Double($0) != nil } ? .numeric : .object
     }
     
-    private static func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
+    static func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
         let targetColumn = dataset[dynamicMember: target]!
         
         var histogram = [String:Double]()
@@ -169,4 +175,5 @@ struct DecisionTreeRule {
         
         return 1.0 - uncertainty
     }
+    
 }

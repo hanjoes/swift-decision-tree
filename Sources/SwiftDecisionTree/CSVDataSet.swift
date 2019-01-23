@@ -110,8 +110,13 @@ class CSVDataSet {
         
         return result
     }
+}
 
-    private func initalizeFromContent(content: String, withHeader: Bool, separator: Character) {
+// MARK: - Utilities
+
+private extension CSVDataSet {
+
+    func initalizeFromContent(content: String, withHeader: Bool, separator: Character) {
         var lines = content.split(separator: "\n")
         if lines.count > 0 {
             let columns = lines[0].split(separator: separator,
@@ -140,7 +145,6 @@ class CSVDataSet {
             headers["column0"] = 0
         }
         
-
         let firstIndex = withHeader ? 1 : 0
         
         if lines.count > (withHeader ? 1 : 0) {
@@ -153,4 +157,5 @@ class CSVDataSet {
             }
         }
     }
+    
 }
