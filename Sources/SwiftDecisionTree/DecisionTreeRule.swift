@@ -25,12 +25,14 @@ struct DecisionTreeRule {
     ///   - rowIndices: indices into the dataset as input
     ///   - features: list of feature (columns) in the given dataset as input
     ///   - target: the target (column) used as the output
+    ///   - purity: function to calculate purity (e.g.: gini for classification and standard deviation for regression)
     /// - Returns: a __DecisionTreeRule__ object based on the input dataset.
     static func findRule(dataset: CSVDataSet,
                          rowIndices: [Int],
                          features: [String],
-                         target: String) -> DecisionTreeRule? {
-        let currentGini = gini(of: dataset, target: target, rowIndices: rowIndices)
+                         target: String,
+                         purity: (CSVDataSet, String, [Int]) -> Double) -> DecisionTreeRule? {
+        let currentGini = purity(dataset, target, rowIndices)
         var maxInformationGain = 0.0
         var result: (String, String, RuleType)?
         for feature in features {
@@ -152,28 +154,5 @@ private extension DecisionTreeRule {
     static func analyze(column: [String]) -> RuleType {
         return column.allSatisfy { Double($0) != nil } ? .numeric : .object
     }
-    
-    static func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
-        let targetColumn = dataset[dynamicMember: target]!
-        
-        var histogram = [String:Double]()
-        for rowIndex in rowIndices {
-            let value = targetColumn[rowIndex]
-            if let _ = histogram[value] {
-                histogram[value]! += 1.0
-            }
-            else {
-                histogram[value] = 0.0
-            }
-        }
-        
-        var uncertainty = 0.0
-        for v in histogram.values {
-            let p = (v / Double(rowIndices.count))
-            uncertainty += p * p
-        }
-        
-        return 1.0 - uncertainty
-    }
-    
+
 }

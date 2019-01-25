@@ -1,3 +1,5 @@
+import Foundation
+
 /// Representation of a decision tree.
 ///
 /// Decision trees are formed by a collection of rules based on variables in the modeling data set:
@@ -18,6 +20,7 @@ class DecisionTree {
         return l == nil && r == nil
     }
     
+    var type: TreeType
     
     /// Majority value of the targets stored in this node.
     ///
@@ -67,8 +70,10 @@ class DecisionTree {
     ///   - dataset: the dataset
     ///   - features: list of feature columns as input
     ///   - target: the target column as output
-    init(dataset:CSVDataSet, features: [String], target: String) {
+    ///   - type: type of the tree, __regressor__ or __classifier__
+    init(dataset:CSVDataSet, features: [String], target: String, type: TreeType) {
         self.dataset = dataset
+        self.type = type
         var _rowIndices = [Int]()
         for index in 0..<dataset.rowCount {
             _rowIndices.append(index)
@@ -86,25 +91,35 @@ class DecisionTree {
     ///   - rowIndices: indices into the dataset that are valid rows
     ///   - features: list of feature columns as input
     ///   - target: the target column as output
-    init(dataset: CSVDataSet, rowIndices: [Int], features: [String], target: String) {
+    ///   - type: type of the tree, __regressor__ or __classifier__
+    init(dataset: CSVDataSet, rowIndices: [Int], features: [String], target: String, type: TreeType) {
         self.dataset = dataset
         self.rowIndices = rowIndices
         self.features = features
         self.target = target
+        self.type = type
     }
     
     
     /// A tree need to "learn" before it can make predictions.
     @discardableResult
     func learn() -> DecisionTree {
+        var purity: (CSVDataSet, String, [Int]) -> Double
+        switch self.type {
+        case .regressor: purity = std
+        case .classifier: purity = gini
+        }
         if let rule = DecisionTreeRule.findRule(dataset: self.dataset,
                                                 rowIndices: self.rowIndices,
                                                 features: features,
-                                                target: target) {
+                                                target: target,
+                                                purity: purity) {
             self.rule = rule
             let (left, right) = rule.split(dataset: dataset, rowIndices: self.rowIndices)
-            l = DecisionTree(dataset: self.dataset, rowIndices: left, features: features, target: target).learn()
-            r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features, target: target).learn()
+            l = DecisionTree(dataset: self.dataset, rowIndices: left, features: features,
+                             target: target, type: self.type).learn()
+            r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features,
+                             target: target, type: self.type).learn()
         }
         return self
     }
@@ -150,6 +165,52 @@ class DecisionTree {
                 totalDiff += 1.0
             }
         }
-        print("test size: \(testRows.count), total diff: \(totalDiff), avgDiff: \(totalDiff/Double(rowIndices.count))")
+        print("test size: \(testRows.count), total diff: \(totalDiff), avgDiff: \(totalDiff/Double(testRows.count))")
     }
+}
+
+
+func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
+    let targetColumn = dataset[dynamicMember: target]!
+    
+    var histogram = [String:Double]()
+    for rowIndex in rowIndices {
+        let value = targetColumn[rowIndex]
+        if let _ = histogram[value] {
+            histogram[value]! += 1.0
+        }
+        else {
+            histogram[value] = 0.0
+        }
+    }
+    
+    var uncertainty = 0.0
+    for v in histogram.values {
+        let p = (v / Double(rowIndices.count))
+        uncertainty += p * p
+    }
+    
+    return 1.0 - uncertainty
+}
+
+func std(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
+    let targetColumn = dataset[dynamicMember: target]!
+    let n = Double(rowIndices.count)
+    var sum = 0.0
+    for rowIndex in rowIndices {
+        sum += Double(targetColumn[rowIndex])!
+    }
+    let mean = sum / n
+    var deviation = 0.0
+    for rowIndex in rowIndices {
+        let diff = Double(targetColumn[rowIndex])! - mean
+        deviation += (diff * diff)
+    }
+    
+    return sqrt(deviation / n)
+}
+
+enum TreeType {
+    case classifier
+    case regressor
 }
