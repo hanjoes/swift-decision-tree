@@ -120,6 +120,7 @@ class DecisionTree {
                              target: target, type: self.type).learn()
             r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features,
                              target: target, type: self.type).learn()
+            print("rule found, divided trees into left(\(left.count) entries) and right(\(right.count) entries).")
         }
         return self
     }
@@ -161,8 +162,13 @@ class DecisionTree {
         var totalDiff = 0.0
         for (index, prediction) in predictions.enumerated() {
             let expectation = targets[testRows[index]]
-            if expectation != prediction {
-                totalDiff += 1.0
+            switch self.type {
+            case .classifier:
+                if expectation != prediction! {
+                    totalDiff += 1.0
+                }
+            case .regressor:
+                totalDiff += abs(Double(expectation)! - Double(prediction!)!)
             }
         }
         print("test size: \(testRows.count), total diff: \(totalDiff), avgDiff: \(totalDiff/Double(testRows.count))")
