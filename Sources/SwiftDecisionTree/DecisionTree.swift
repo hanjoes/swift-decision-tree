@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - DecisionTree
+
 /// Representation of a decision tree.
 ///
 /// Decision trees are formed by a collection of rules based on variables in the modeling data set:
@@ -175,7 +177,15 @@ class DecisionTree {
     }
 }
 
+// MARK: - Math Functions
 
+/// Calculates the GINI impurity of the given subset a dataset.
+///
+/// - Parameters:
+///   - dataset: CSVDataSet
+///   - target: feature (target) in the dataset to calculate impurity for
+///   - rowIndices: number of row indices into the dataset as the subset
+/// - Returns: the gini impurity given the subset and feature of the dataset
 func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
     let targetColumn = dataset[dynamicMember: target]!
     
@@ -199,6 +209,14 @@ func gini(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
     return 1.0 - uncertainty
 }
 
+
+/// Calculates the standard variation of the given subset of a datset.
+///
+/// - Parameters:
+///   - dataset: CSVDataSet
+///   - target: feature (target) in the dataset to calculate impurity for
+///   - rowIndices: number of row indices into the dataset as the subset
+/// - Returns: the standard deviation given the subset and feature of the dataset
 func std(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
     let targetColumn = dataset[dynamicMember: target]!
     let n = Double(rowIndices.count)
@@ -216,6 +234,12 @@ func std(of dataset: CSVDataSet, target: String, rowIndices: [Int]) -> Double {
     return sqrt(deviation / n)
 }
 
+// MARK: - TreeType
+
+/// DecisionTree type.
+///
+/// - classifier: indicates a tree is for classification
+/// - regressor: indicates a tree is for regression
 enum TreeType {
     case classifier
     case regressor
