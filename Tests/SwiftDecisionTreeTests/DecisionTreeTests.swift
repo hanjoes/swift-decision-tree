@@ -15,6 +15,10 @@ final class DecisionTreeTests: XCTestCase {
         return Bundle(for: type(of: self)).path(forResource: "adult", ofType: "test")!
     }
     
+    var wineFilePath: String {
+        return Bundle(for: type(of: self)).path(forResource: "wine", ofType: "data")!
+    }
+    
     func test_BuildTree_Iris() {
         guard let ds = CSVDataSet(csvPath: irisFilePath, withHeader: false, separator: ",") else {
             return
@@ -50,6 +54,27 @@ final class DecisionTreeTests: XCTestCase {
                                 target: "column\(col-1)", type: .classifier).learn()
         //        print(tree.basicstats)
 //        tree.evaluate(testRows: )
+    }
+    
+    func test_BuildTree_Wine() {
+        guard let ds = CSVDataSet(csvPath: wineFilePath, withHeader: false, separator: ",") else {
+            return
+        }
+        
+        print("\(ds.rowCount) rows in dataset")
+        let col = ds[0]!.count
+        print("\(col) columns in the datasets")
+        var features = [String]()
+        for index in 0..<col-1 {
+            features.append("column\(index)")
+        }
+        
+        let (train, test) = ds.trainingTestSplit(testPercentage: 0.2)
+        let tree = DecisionTree(dataset: ds, rowIndices: train,
+                                features: features,
+                                target: "column4", type: .classifier).learn()
+        //        print(tree.basicstats)
+        tree.evaluate(testRows: test)
     }
     
     static var allTests = [
