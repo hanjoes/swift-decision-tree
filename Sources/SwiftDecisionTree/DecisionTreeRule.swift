@@ -36,7 +36,6 @@ struct DecisionTreeRule {
         var maxInformationGain = 0.0
         var result: (String, String, RuleType)?
         for feature in features {
-            print("rule finder working on feature: \(feature)")
             if let (lgini, rgini, boundary, type) = findBoundary(for: feature,
                                                                  target: target,
                                                                  rowIndices: rowIndices,
@@ -112,7 +111,6 @@ private extension DecisionTreeRule {
         var maxInformationGain = Double(Int.min)
         var result: (Double, Double, String, RuleType)?
         for rowIndex in rowIndices {
-            print("rule finder working on row: \(rowIndex) of feature \(feature)")
             let currentBoundary = column[rowIndex]
             let (l, r) = divide(dataset: dataset,
                                 boundary: currentBoundary,

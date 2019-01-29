@@ -173,7 +173,12 @@ class DecisionTree {
                 totalDiff += abs(Double(expectation)! - Double(prediction!)!)
             }
         }
-        print("test size: \(testRows.count), total diff: \(totalDiff), avgDiff: \(totalDiff/Double(testRows.count))")
+        switch self.type {
+        case .regressor:
+            print("test size: \(testRows.count), total diff: \(totalDiff), avgDiff: \(totalDiff/Double(testRows.count))")
+        case .classifier:
+            print("test size: \(testRows.count), total diff: \(totalDiff), misclassification: \(totalDiff/Double(testRows.count))")
+        }
     }
 }
 

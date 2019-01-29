@@ -61,18 +61,18 @@ final class DecisionTreeTests: XCTestCase {
             return
         }
         
-        print("\(ds.rowCount) rows in dataset")
         let col = ds[0]!.count
         print("\(col) columns in the datasets")
         var features = [String]()
-        for index in 0..<col-1 {
+        for index in 1..<col-1 {
             features.append("column\(index)")
         }
-        
+
         let (train, test) = ds.trainingTestSplit(testPercentage: 0.2)
+        print("\(ds.rowCount) rows in dataset, \(train.count) rows in training set and \(test.count) rows in test set")
         let tree = DecisionTree(dataset: ds, rowIndices: train,
                                 features: features,
-                                target: "column4", type: .classifier).learn()
+                                target: "column0", type: .classifier).learn()
         //        print(tree.basicstats)
         tree.evaluate(testRows: test)
     }
