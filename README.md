@@ -1,6 +1,6 @@
 # Motivation
 
-Swift ML support on the horizon, (checkout [Swift TensorFlow](https://github.com/tensorflow/swift), [swift-jupyter](https://github.com/google/swift-jupyter)). Although swift is still in it's primitive stage, the possibility of utilizing a fast, modern programming language in machine learning exites me. 
+Swift ML support is on the horizon (checkout [Swift TensorFlow](https://github.com/tensorflow/swift), [swift-jupyter](https://github.com/google/swift-jupyter)). Although swift is still in it's primitive stage, the possibility of utilizing a fast, modern programming language in machine learning is fascinating. 
 
 This project will help me re-learn Swift by implementing this well-known statistical model which is also the building block for the versatile [Random Forest](https://en.wikipedia.org/wiki/Random_forest) learning algorithm.
 
