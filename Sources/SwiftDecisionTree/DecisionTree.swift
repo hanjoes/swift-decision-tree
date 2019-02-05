@@ -122,7 +122,7 @@ class DecisionTree {
                              target: target, type: self.type).learn()
             r = DecisionTree(dataset: self.dataset, rowIndices: right, features: features,
                              target: target, type: self.type).learn()
-            print("rule found, divided trees into left(\(left.count) entries) and right(\(right.count) entries).")
+//            print("rule found, divided trees into left(\(left.count) entries) and right(\(right.count) entries).")
         }
         return self
     }
