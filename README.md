@@ -8,5 +8,5 @@ This project will help me re-learn Swift by implementing this well-known statist
 In this project, I want to achieve several goals:
 
 - [ ] Implement [Decision Tree](https://en.wikipedia.org/wiki/Decision_tree_learning) learning using [CART](https://en.wikipedia.org/wiki/Predictive_analytics#Classification_and_regression_trees_.28CART.29).
-- [ ] Evaluate performance of this algorithm.
+- [ ] Evaluate performance of the implementation on several datasets.
 - [ ] Demonstrate how to use [JupyterLab](https://github.com/jupyterlab/jupyterlab) along with Swift kernel by leveraging the [swift-jupyter](https://github.com/google/swift-jupyter) project.
